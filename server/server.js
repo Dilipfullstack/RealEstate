@@ -1,24 +1,24 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const property=require("./routes/property")
+const property = require("./routes/property")
 
 
 
 
 const signupModal = require("./models/signup-Modal");
-const  PropertyDetailsModel=require("./models/addPropertyModel");
+const PropertyDetailsModel = require("./models/addPropertyModel");
 
 const { checkExistinguser, generatePasswordHash } = require("./utility")
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs")
 require('dotenv').config(); //for setting environment variables on server
 
-const cors=require("cors");
-const corsOptions ={
-   origin:'*', 
-   credentials:true,            //access-control-allow-credentials:true
-   optionSuccessStatus:200,
+const cors = require("cors");
+const corsOptions = {
+    origin: '*',
+    credentials: true,            //access-control-allow-credentials:true
+    optionSuccessStatus: 200,
 }
 
 app.use(cors(corsOptions))
@@ -30,7 +30,7 @@ app.use(express.urlencoded({ extended: false }))
 
 
 app.use(express.json());
-app.use(express.urlencoded({extended: false}));
+app.use(express.urlencoded({ extended: false }));
 app.use(cors())
 
 
@@ -84,8 +84,8 @@ app.post('/addnewproperty', (req, res) => {
 
 
 //starting the server
-app.listen(process.env.PORT || 3001,(err)=>{
-    if(!err){
+app.listen(process.env.PORT || 3001, (err) => {
+    if (!err) {
         console.log("server started")
     } else {
         console.log(err)
@@ -94,7 +94,7 @@ app.listen(process.env.PORT || 3001,(err)=>{
 
 
 //mongo db connection
-const mongoDB =process.env.ATLAS_URI;
+const mongoDB = process.env.ATLAS_URI;
 mongoose.connect(mongoDB, {}).then((res) => {
     console.log("connected to db")
 }).catch((err) => {
@@ -103,11 +103,11 @@ mongoose.connect(mongoDB, {}).then((res) => {
 
 
 //mohin changes
-app.get('/',(req,res)=>{
-  res.send("base route")
+app.get('/', (req, res) => {
+    res.send("base route")
 })
 
-app.use("/getProperty",property);
+app.use("/getProperty", property);
 
 
 //thrinath changes
@@ -117,39 +117,39 @@ app.post("/signup", async (req, res) => {
         res.status(200).send("email already exist")
     } else {
         generatePasswordHash(req.body.password).then((passwordHash) => {
-            signupModal.create({ email: req.body.email, password:passwordHash }).then((data) => {
+            signupModal.create({ email: req.body.email, password: passwordHash }).then((data) => {
                 res.status(200).send("user signedup sucessfully")
             }).catch((err) => {
                 res.status(400).send(err.message)
             })
 
         })
-        
+
     }
 })
 
-app.post("/signin",(req,res)=>{
-    
+app.post("/signin", (req, res) => {
+
     signupModal.find({ email: req.body.email }).then((userData) => {
-        
+
         if (userData.length) {
             bcrypt.compare(req.body.password, userData[0].password).then((val) => {
                 if (val) {
-                    const authToken = jwt.sign(userData[0].email,process.env.SECRET_KEY);
+                    const authToken = jwt.sign(userData[0].email, process.env.SECRET_KEY);
                     console.log(1)
-                    res.status(200).send({ authToken} );
+                    res.status(200).send({ authToken });
                 } else {
                     res.status(400).send("invalid password please enter correct password")
                 }
             })
-        } else {
+        } else  {
             res.status(400).send("email not exist please signup")
         }
     })
 })
 
 
-app.post("/logout",(req,res)=>{
-    authToken=""
+app.post("/logout", (req, res) => {
+    authToken = ""
     res.status(200).send("loggedout sucessfully")
 })
